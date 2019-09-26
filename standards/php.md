@@ -5,6 +5,7 @@ The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL 
 1. Every project MUST have [CODEOWNERS](https://help.github.com/en/articles/about-code-owners) file in the root folder 
 2. Every project MUST have LICENSE file in the root folder
 3. Every project SHOULD have travis integration, with coverage and code quality
+..*. travis integration MUST test all the [supported PHP Versions](https://www.php.net/supported-versions.php) . This does not mean that the project must support all versions.
 3. Every project MUST have a README file, that SHOULD have the following items:
 ..1. Title of the project 
 ..2. Release icon
