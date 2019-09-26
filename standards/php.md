@@ -17,6 +17,6 @@ The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL 
 ..9. Documentations on usage
 ..10. Instructions for testing
 ..11. Link to license
-4. Every project SHOULD have composer.json file in the root folder
+4. Every project MUST have composer.json file in the root folder
 5. Every project SHOULD have its code under the `src` folder
 6. Every project SHOULD HAVE its tests under the `tests` folder
