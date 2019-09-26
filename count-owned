@@ -1,0 +1,34 @@
+#!/bin/bash -e
+
+user=$1
+token=$2
+
+cat /dev/null > repos > owned > not_owned > forks > private
+
+diff=999
+page=0
+while [[ $diff -ne 0 ]]; do
+    start_count=$(cat repos | wc -l)
+    curl -u "${user}:${token}" -sS "https://api.github.com/users/softonic/repos?page=${page}" | jq -r '.[].name' >> repos
+    end_count=$(cat repos | wc -l)
+    diff=$((end_count-start_count))
+    page=$((page+1))
+done
+
+for repo in $(cat repos); do
+    info=$(curl -u "${user}:${token}" -sS https://api.github.com/repos/softonic/${repo})
+    is_fork=$(echo "$info" | jq -r '.fork')
+    is_private=$(echo "$info" | jq -r '.private')
+    if [ "${is_fork}" == "true" ]; then
+        echo "${repo}" >> forks
+    elif [ "${is_private}" == "true" ]; then
+        echo "${repo}" >> private
+    else
+        owners_status=$(curl -u "${user}:${token}" -sS -o /dev/null -w "%{http_code}" "https://api.github.com/repos/softonic/${repo}/contents/CODEOWNERS")
+        if [ "${owners_status}" == "200" ]; then
+            echo "${repo}" >> owned
+        else
+            echo "${repo}" >> not_owned
+        fi
+    fi
+done
