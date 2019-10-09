@@ -15,4 +15,6 @@ Softonic's Open Source Software documentation
 
 #### Projects standards
 
+* [Docker](./standards/docker.md)
 * [PHP](./standards/php.md)
+* [JS](./standards/js.md)
