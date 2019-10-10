@@ -1,0 +1,43 @@
+#!/bin/bash -ex
+
+user=$1
+token=$2
+
+rm -rf commits
+mkdir -p commits
+
+cat /dev/null > repos > commits_stats
+
+since=$(date --date='-3 month' '+%Y-%m-%dT%H:%M:%SZ')
+
+diff=999
+page=0
+
+while [[ $diff -ne 0 ]]; do
+    start_count=$(cat repos | wc -l)
+    curl -u "${user}:${token}" -sS "https://api.github.com/orgs/softonic/repos?type=sources&page=${page}" | jq -r '.[].name' >> repos
+    end_count=$(cat repos | wc -l)
+    diff=$((end_count-start_count))
+    page=$((page+1))
+done
+
+for repo in $(cat repos); do
+    status_code=$(curl -u "${user}:${token}" -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/softonic/${repo}/commits")
+    if [[ $status_code -eq 200 ]]; then
+        total_commits=0
+        total_internal_commits=0
+        n_commits=30
+        page=1
+        while [[ $n_commits -eq 30 ]]; do
+            commits=$(curl -u "${user}:${token}" -sS "https://api.github.com/repos/softonic/${repo}/commits?since=${since}&page=${page}")
+            page=$((page+1))
+            echo "${commits}" | jq '.[].commit.author.email' >> "commits/${repo}"
+            n_commits=$(echo "${commits}" | jq 'length')
+            n_internal_commits=$(echo "${commits}" | jq '.[].commit.author.email | select( . | contains("@softonic.com") )' | wc -l)
+            total_internal_commits=$((total_internal_commits+n_internal_commits))
+            total_commits=$((total_commits+n_commits))
+        done
+        total_external_commits=$((total_commits - total_internal_commits))
+        echo "${repo} ${total_commits} ${total_internal_commits} ${total_external_commits}" >> commits_stats
+    fi
+done
